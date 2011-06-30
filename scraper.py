@@ -16,6 +16,10 @@ api_urls = []
 docs = {}
 
 def find_docs(url):
+    """
+    Finds the description, structure of the api call, and a sample api call
+    from a given BroadbandMap API documentation url.
+    """
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     desc = soup.find(text=re.compile('^Description')).findNext('p').string
     apicall = soup.find(text='API call')
@@ -31,7 +35,8 @@ def find_docs(url):
 
 def find_links():
     """
-    for that EPA dataset.
+    Creates list of links to all API('s) methods for BroadbandMap family of
+    APIs.
     """
     # We'll use BeautifulSoup + lxml for parsing.
     url = "http://www.broadbandmap.gov/developer"
@@ -53,11 +58,13 @@ def parse_api():
 
 def find_params(url):
     """
-    generate docs for each class by hand, probably.:
-    dir(module)
-    .__doc__
-    Example: http://some_url.com/
-    >>> api.somecall(foo)
+    Finds the bulleted list of parameters on given BroadbandMap url.
+    Then cleans the list, i.e. takes something like:
+        [u'\n', u'dataVersion - specify the data version for      search(no
+        defaults). Examples: fall2010', u'\n',]
+    and takes out the newlines and weird extra spaces and outputs:
+        [u'dataVersion - specify the data version for search(no defaults).
+        Examples: fall2010']
     """
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     param = soup.find(text='Parameters')
@@ -67,13 +74,16 @@ def find_params(url):
     return cleanparams
 
 def find_paramnames(params):
-    print params
+    """
+    Takes a list which contains elements like:
+        [u'maxResults - specify the maximum results to be 
+        returned - defaulted to 100']
+    and outputs:
+        [u'maxResults']
+    """
     names = []
-    for name in params:
-        #names += name.split(re.compile('\w - \w'))
-        names += name.split(' - ')
-    print names
-    names = [names[i] for i in range(0, len(names), 2)]
+    for line in params:
+        names.append(line.split(' - ', 1)[0])
     return names
 
 
@@ -82,63 +92,6 @@ def find_paramnames(params):
 params = find_params('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
 find_paramnames(params)
 #parse_api()
-
-
-#def find_definition_urls(set_of_links):
-    #"""Find the available definition URLs for the columns in a table."""
-    #definition_dict = {}
-    #for link in set_of_links:
-        #if link.startswith('http://'):
-            #table_dict = {}
-            #soup = bs(urlopen(link).read(), ['fast', 'lxml'])
-            #unordered_list = soup.find('div', {'id': 'main'}).findAll('ul')[-1]
-            #for li in unordered_list.findAll('li'):
-                #a = li.findChild('a')
-                #table_dict.update({a.string: a.attrs['href']})
-            #link_name = re.sub('.*p_table_name=(\w+)&p_topic.*', r'\1',
-                               #link).upper()
-            #definition_dict.update({link_name: table_dict})
-    #return definition_dict
-
-#def create_agency(agency):
-    #"""Create an agency text file of definitions."""
-    #links = find_table_links(agency)
-    #definition_dict = find_definition_urls(links)
-    #with open(agency + '.txt', 'w') as f:
-        #f.write(str(definition_dict))
-
-#def loop_through_agency(agency):
-    #with open(agency + '.txt') as f:
-        #data = eval(f.read())
-    #for table in data:
-        #for column in data[table]:
-            #value_link = data[table][column]
-            #data[table][column] = grab_definition(value_link)
-    #data = json.dumps(data)
-    #with open(agency + '_values.json', 'w') as f:
-        #f.write(str(data))
-
-
-#def grab_definition(url):
-    #if url.startswith('//'):
-        #url = 'http:' + url
-    #soup = bs(urlopen(url).read(), ['fast', 'lxml'])
-    #try:
-        #bold = soup.findAll('b')[1]
-        #value = bold.next.next.strip('\n\n')
-    #except IndexError:
-        #print url
-    #except TypeError:
-        #print url
-    #else:
-        #return value
-    #return url
-
-
-#def main():
-    #agency = 'radinfo'
-    #create_agency(agency)
-    #loop_through_agency(agency)
 
 #if __name__ == '__main__':
     #main()
