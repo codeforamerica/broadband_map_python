@@ -38,13 +38,18 @@ def find_links():
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     hrefs = soup.findAll('a', href=True)
     api_urls = [ tag['href'] for tag in hrefs 
-            if 'http://www.broadbandmap.gov/developer/api' in ['href']]
+            if 'http://www.broadbandmap.gov/developer/api' in tag['href']]
+    return api_urls
+
+def parse_api():
+    api_urls = find_links()
     for url in api_urls:
-        doc = find_docs(url)
-        docs[url] = doc
         print url
-    #with open('scraperdocs.txt', 'w') as f:
-        #f.write(str(docs))
+        doc = find_docs(url)
+        params = find_params(url)
+        docs[url] = doc.append(params)
+    with open('scraperdocs.txt', 'w') as f:
+        f.write(str(docs))
 
 def find_params(url):
     """
@@ -59,12 +64,25 @@ def find_params(url):
     params = param.findNext('ul').findAll(text=True)
     cleanparams = filter(lambda x: '\n' not in x, params)
     cleanparams = map(lambda x: x.replace("      "," "), cleanparams)
+    #print cleanparams
     #cleanparams = [param for param in params if not '\n' in param]
-    print cleanparams
+    return cleanparams
+
+def find_paramnames(params):
+    names = []
+    for name in params:
+        #names += name.split(re.compile('\w - \w'))
+        names += name.split(' - ')
+    names = [names[i] for i in range(0, len(names), 2)]
+    print names
+    return names
+
 
 #find_links()
 #find_docs('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
-find_params('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
+params = find_params('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
+find_paramnames(params)
+#parse_api()
 
 
 #def find_definition_urls(set_of_links):
