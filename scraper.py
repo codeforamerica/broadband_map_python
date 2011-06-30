@@ -64,17 +64,16 @@ def find_params(url):
     params = param.findNext('ul').findAll(text=True)
     cleanparams = filter(lambda x: '\n' not in x, params)
     cleanparams = map(lambda x: x.replace("      "," "), cleanparams)
-    #print cleanparams
-    #cleanparams = [param for param in params if not '\n' in param]
     return cleanparams
 
 def find_paramnames(params):
+    print params
     names = []
     for name in params:
         #names += name.split(re.compile('\w - \w'))
         names += name.split(' - ')
-    names = [names[i] for i in range(0, len(names), 2)]
     print names
+    names = [names[i] for i in range(0, len(names), 2)]
     return names
 
 
