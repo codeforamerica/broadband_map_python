@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python 
 """
 Scraper, BroadBand Maps API.
 """
@@ -22,15 +21,9 @@ def find_docs(url):
     """
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     desc = soup.find(text=re.compile('^Description')).findNext('p').string
-    apicall = soup.find(text='API call')
-    if apicall == None:
-        apicall = soup.find(text='API Call')
     #lstrip to remove \n at beginning
-    apicall = apicall.findPrevious('p').contents[2].lstrip()
-    samplecall = soup.find(text='Sample call')
-    if samplecall == None:
-        samplecall = soup.find(text='Sample Call')
-    samplecall = samplecall.findNext('a').string
+    apicall = soup.find(text=re.compile('^API [c,C]all')).findPrevious('p').contents[2].lstrip()
+    samplecall = soup.find(text=re.compile('Sample [c,C]all')).findNext('a').string
     return [desc, apicall, samplecall]
 
 def find_links():
@@ -51,12 +44,12 @@ def parse_api():
     for url in api_urls:
         print url
         doc = find_docs(url)
-        params = find_params(url)
-        docs[url] = doc.append(params)
-    with open('scraperdocs.txt', 'w') as f:
-        f.write(str(docs))
+        paramdocs = find_paramdocs(url)
+        docs[url] = doc + paramdocs
+    #with open('scraperdocs.txt', 'w') as f:
+        #f.write(str(docs))
 
-def find_params(url):
+def find_paramdocs(url):
     """
     Finds the bulleted list of parameters on given BroadbandMap url.
     Then cleans the list, i.e. takes something like:
@@ -67,7 +60,7 @@ def find_params(url):
         Examples: fall2010']
     """
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
-    param = soup.find(text='Parameters')
+    param = soup.find(text=re.compile('^Parameter'))
     params = param.findNext('ul').findAll(text=True)
     cleanparams = filter(lambda x: '\n' not in x, params)
     cleanparams = map(lambda x: x.replace("      "," "), cleanparams)
@@ -89,9 +82,11 @@ def find_paramnames(params):
 
 #find_links()
 #find_docs('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
-params = find_params('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
-find_paramnames(params)
-#parse_api()
+#params = find_params('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
+#find_paramnames(params)
+#find_params('http://www.broadbandmap.gov/developer/api/broadband-summary-api-nation')
+#find_params('http://www.broadbandmap.gov/developer/api/btop-funding-api-by-state-id')
+parse_api()
 
 #if __name__ == '__main__':
     #main()
