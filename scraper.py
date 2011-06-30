@@ -22,7 +22,7 @@ def find_docs(url):
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     desc = soup.find(text=re.compile('^Description')).findNext('p').string
     #lstrip to remove \n at beginning
-    apicall = soup.find(text=re.compile('^API [c,C]all')).findPrevious('p').contents[2].lstrip()
+    apicall = soup.find(text=re.compile('API [c,C]all')).findPrevious('p').contents[2].lstrip()
     samplecall = soup.find(text=re.compile('Sample [c,C]all')).findNext('a').string
     return [desc, apicall, samplecall]
 
@@ -38,6 +38,13 @@ def find_links():
     api_urls = [ tag['href'] for tag in hrefs 
             if 'http://www.broadbandmap.gov/developer/api' in tag['href']]
     return api_urls
+
+def create_method_names():
+    api_urls = find_links()
+    api_urls = [url.replace('http://www.broadbandmap.gov/developer/api/', '') for
+            url in api_urls]
+    api_urls = [url.replace('-', '_') for url in api_urls]
+    print api_urls
 
 def parse_api():
     api_urls = find_links()
@@ -55,7 +62,7 @@ def find_paramdocs(url):
     Then cleans the list, i.e. takes something like:
         [u'\n', u'dataVersion - specify the data version for      search(no
         defaults). Examples: fall2010', u'\n',]
-    and takes out the newlines and weird extra spaces and outputs:
+    and removes the newlines and weird extra spaces and outputs:
         [u'dataVersion - specify the data version for search(no defaults).
         Examples: fall2010']
     """
@@ -68,7 +75,7 @@ def find_paramdocs(url):
 
 def find_paramnames(params):
     """
-    Takes a list which contains elements like:
+    Takes a list with elements like:
         [u'maxResults - specify the maximum results to be 
         returned - defaulted to 100']
     and outputs:
@@ -86,7 +93,8 @@ def find_paramnames(params):
 #find_paramnames(params)
 #find_params('http://www.broadbandmap.gov/developer/api/broadband-summary-api-nation')
 #find_params('http://www.broadbandmap.gov/developer/api/btop-funding-api-by-state-id')
-parse_api()
+create_method_names()
+#parse_api()
 
 #if __name__ == '__main__':
     #main()
