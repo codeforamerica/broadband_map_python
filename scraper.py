@@ -18,10 +18,10 @@ docs = {}
 def find_docs(url):
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     desc = soup.find(text=re.compile('^Description')).findNext('p').string
-    #lstrip to remove \n at beginning
     apicall = soup.find(text='API call')
     if apicall == None:
         apicall = soup.find(text='API Call')
+    #lstrip to remove \n at beginning
     apicall = apicall.findPrevious('p').contents[2].lstrip()
     samplecall = soup.find(text='Sample call')
     if samplecall == None:
@@ -37,10 +37,6 @@ def find_links():
     url = "http://www.broadbandmap.gov/developer"
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     hrefs = soup.findAll('a', href=True)
-    #for i in range(len(hrefs)):
-        #url = hrefs[i]['href']
-        #if "http://www.broadbandmap.gov/developer/api" in url:
-            #api_urls.append(url)
     api_urls = [ tag['href'] for tag in hrefs 
             if 'http://www.broadbandmap.gov/developer/api' in ['href']]
     for url in api_urls:
@@ -61,8 +57,10 @@ def find_params(url):
     soup = bs(urlopen(url).read(), ['fast', 'lxml'])
     param = soup.find(text='Parameters')
     params = param.findNext('ul').findAll(text=True)
-    #s.replace("     "," ")
-    print params
+    cleanparams = filter(lambda x: '\n' not in x, params)
+    cleanparams = map(lambda x: x.replace("      "," "), cleanparams)
+    #cleanparams = [param for param in params if not '\n' in param]
+    print cleanparams
 
 #find_links()
 #find_docs('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
