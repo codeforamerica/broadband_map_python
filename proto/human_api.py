@@ -60,10 +60,11 @@ class Almanac(BroadbandMap):
 
         >>> ranking_by_geography_id_within_state('fall2010', '01', 'population',
         ...    'wirelineproviderequals0', 'county', '01101')
+
         @see
         http://www.broadbandmap.gov/developer/api/almanac-api-ranking-by-geography-id-within-a-state
         """
-        self.call_api(dataVersion, 'rankby', 'state', stateId, censusMetricType, rankingMetric,
+        return self.call_api(dataVersion, 'rankby', 'state', stateId, censusMetricType, rankingMetric,
                 geographyType, 'id', geographyId, **kwarg)
 
 foo = Almanac()
