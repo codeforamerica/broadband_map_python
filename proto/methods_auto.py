@@ -44,7 +44,7 @@ def formatparams(params):
 
 def createfxn(name, params,  urlparams):
     defstr = "    def " + name + "(self, " + ", ".join(params) + ", **optargs):"
-    callstr = "       self.call_api(" + formatparams(urlparams) + ", **optargs):" 
+    callstr = "       self.call_api(" + formatparams(urlparams) + ", **optargs)" 
     print defstr + "\n" + callstr 
 
     #with open('api.py', 'w') as f:
