@@ -1,6 +1,10 @@
 #!/usr/bin/env python 
 """
 Scraper, BroadBand Maps API.
+I used this scraper to create two data files, scraperlinks and scraperdocs (can
+be found in this directory). These are a python dictionary of all the API 
+documentation links and a dictionary of all the data needed for the
+documentation for this API wrapper.
 """
 
 import re
@@ -14,6 +18,29 @@ from bs4 import BeautifulSoup as bs
 api_urls = []
 docs = {}
 
+def parse_api():
+    api_urls = find_links()
+    for url in api_urls:
+        print url
+        doc = find_docs(url)
+        paramdocs = find_paramdocs(url)
+        docs[url] = doc + paramdocs
+    #with open('scraperdocs.txt', 'w') as f:
+        #f.write(str(docs))
+
+def find_links():
+    """
+    Creates list of links to documentation for all API('s) methods for 
+    BroadbandMap family of APIs.
+    """
+    # We'll use BeautifulSoup + lxml for parsing.
+    url = "http://www.broadbandmap.gov/developer"
+    soup = bs(urlopen(url).read(), ['fast', 'lxml'])
+    hrefs = soup.findAll('a', href=True)
+    api_urls = [ tag['href'] for tag in hrefs 
+            if 'http://www.broadbandmap.gov/developer/api' in tag['href']]
+    return api_urls
+
 def find_docs(url):
     """
     Finds the description, structure of the api call, and a sample api call
@@ -25,36 +52,6 @@ def find_docs(url):
     apicall = soup.find(text=re.compile('API [c,C]all')).findPrevious('p').contents[2].lstrip()
     samplecall = soup.find(text=re.compile('Sample [c,C]all')).findNext('a').string
     return [desc, apicall, samplecall]
-
-def find_links():
-    """
-    Creates list of links to all API('s) methods for BroadbandMap family of
-    APIs.
-    """
-    # We'll use BeautifulSoup + lxml for parsing.
-    url = "http://www.broadbandmap.gov/developer"
-    soup = bs(urlopen(url).read(), ['fast', 'lxml'])
-    hrefs = soup.findAll('a', href=True)
-    api_urls = [ tag['href'] for tag in hrefs 
-            if 'http://www.broadbandmap.gov/developer/api' in tag['href']]
-    return api_urls
-
-def create_method_names():
-    api_urls = find_links()
-    api_urls = [url.replace('http://www.broadbandmap.gov/developer/api/', '') for
-            url in api_urls]
-    api_urls = [url.replace('-', '_') for url in api_urls]
-    print api_urls
-
-def parse_api():
-    api_urls = find_links()
-    for url in api_urls:
-        print url
-        doc = find_docs(url)
-        paramdocs = find_paramdocs(url)
-        docs[url] = doc + paramdocs
-    #with open('scraperdocs.txt', 'w') as f:
-        #f.write(str(docs))
 
 def find_paramdocs(url):
     """
@@ -73,27 +70,34 @@ def find_paramdocs(url):
     cleanparams = map(lambda x: x.replace("      "," "), cleanparams)
     return cleanparams
 
-def find_paramnames(params):
-    """
-    Takes a list with elements like:
-        [u'maxResults - specify the maximum results to be 
-        returned - defaulted to 100']
-    and outputs:
-        [u'maxResults']
-    """
-    names = []
-    for line in params:
-        names.append(line.split(' - ', 1)[0])
-    return names
+# Todo: Move to forthcoming text massaging class
+#def find_paramnames(params):
+    #"""
+    #Takes a list with elements like:
+        #[u'maxResults - specify the maximum results to be 
+        #returned - defaulted to 100']
+    #and outputs:
+        #[u'maxResults']
+    #"""
+    #names = []
+    #for line in params:
+        #names.append(line.split(' - ', 1)[0])
+    #return names
+
+# Todo: Move this to the forthcoming data-massaging class.
+#def create_method_names():
+    #api_urls = find_links()
+    #api_urls = [url.replace('http://www.broadbandmap.gov/developer/api/', '') for
+            #url in api_urls]
+    #api_urls = [url.replace('-', '_') for url in api_urls]
+    #print api_urls
 
 
 #find_links()
 #find_docs('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
 #params = find_params('http://www.broadbandmap.gov/developer/api/wireless-broadband-api')
 #find_paramnames(params)
-#find_params('http://www.broadbandmap.gov/developer/api/broadband-summary-api-nation')
-#find_params('http://www.broadbandmap.gov/developer/api/btop-funding-api-by-state-id')
-create_method_names()
+#create_method_names()
 #parse_api()
 
 #if __name__ == '__main__':
