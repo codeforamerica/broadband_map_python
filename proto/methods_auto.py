@@ -32,7 +32,8 @@ params = ['dataVersion', 'stateId', 'censusMetric', 'rankingMetric', 'geographyT
 name = "ranking_by_geography_id_within_state"
 urlparams = ['broadbandmap', 'almanac', '{dataVersion}', 'rankby', 'state', '{stateId}', '{censusMetric}', '{rankingMetric}', '{geographyType}', 'id', '{geographyId}']
 
-def formatparams(params):
+
+def formatparams(params): 
     formattedparams = []
     for param in params:
         if '{' in param:
@@ -41,10 +42,9 @@ def formatparams(params):
             formattedparams.append("'%s'" % param)
     return ", ".join(formattedparams)
 
-
-def createfxn(name, params,  urlparams):
-    defstr = "    def " + name + "(self, " + ", ".join(params) + ", **optargs):"
-    callstr = "       self.call_api(" + formatparams(urlparams) + ", **optargs)" 
+def createfxn(fxnname, fxnparams,  apiparams):
+    defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"
+    callstr = "       self.call_api(" + formatparams(apiparams) + ", **optargs)" 
     print defstr + "\n" + callstr 
 
     #with open('api.py', 'w') as f:
