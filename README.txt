@@ -1,0 +1,24 @@
+Python wrapper for National Broadband Map API
+http://broadbandmap.gov/developer
+
+31 Jun 2011: 
+`proto` directory contains my prototyping work on going from scraped data to 
+correctly formatted documentation, and perhaps eventually to functions or 
+classes. 
+Files in .txt are data gleaned from running scraper.py
+And using bs4 (beautiful soup alpha) folder copied to dist-packages (on 
+ubuntu 10.10, path is `/usr/lib/python2.6/dist-packages`)
+
+28 Jul 2010:
+Todo: deal with the optargs. Sample api calls look like this: SampleCall
+http://www.broadbandmap.gov/broadbandmap/almanac/fall2010/rankby/state/01/population/wirelineproviderequals0/county/id/01101?format=json&order=asc
+Then I need to output:
+>>> ranking_by_geography_id_within_state('fall2010', '01', 'population',
+...    'wirelineproviderequals0', 'county', '01101')
+This will be further refined by hand to provide:
+>>> api.alamnac.ranking_by_geography_id_within_state('fall2010', '01', 'population',
+...    'wirelineproviderequals0', 'county', '01101', order='asc')
+I can work with this data: APICall 
+http://www.broadbandmap.gov/broadbandmap/almanac/{dataVersion}/rankby/state/{stateId}/{censusMetric}/{rankingMetric}/{geographyType}/id/{geographyId}?properties={properties}&format={format}&callback={functionName}&order={sortOrder}&properties={properties}
+So. Planned steps:
+APICall.replace(http...broadbandmap),  

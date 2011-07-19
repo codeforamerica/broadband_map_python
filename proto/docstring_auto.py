@@ -37,24 +37,25 @@ expected = """
         @see
         http://www.broadbandmap.gov/developer/api/almanac-api-ranking-by-geography-id-within-a-state
         """
-print 'EXPECTED', expected       
-def extractparams(apicall):
-    apicall = apicall.replace('http://www.broadbandmap.gov/broadbandmap', '')
-    apicall = apicall.split('/') 
-    apicall = 
+#print 'EXPECTED', expected       
+
+def extractexampleparams(apicall, samplecall):
+    samplecall = samplecall.replace('http://www.broadbandmap.gov/broadbandmap/',
+            '').split('/')
+    exampleparams = samplecall[:-1] + samplecall[-1].split('?')
+    staticparams = apicall.replace('http://www.broadbandmap.gov/broadbandmap/',
+            '').split('/')
+    staticparams = staticparams[:-1] + staticparams[-1].split('?')
+    exampleparams = [v for v in exampleparams if v not in staticparams]
+    print "APICALL", exampleparams, 
+    #print '\n', staticparams,'\n'
+    return "', '".join(exampleparams[:-1])
+
+extractexampleparams('http://www.broadbandmap.gov/broadbandmap/almanac/{dataVersion}/rankby/state/{stateId}/{censusMetric}/{rankingMetric}/{geographyType}/id/{geographyId}?properties={properties}&format={format}&callback={functionName}&order={sortOrder}&properties={properties',
+'http://www.broadbandmap.gov/broadbandmap/almanac/fall2010/rankby/state/01/population/wirelineproviderequals0/county/id/01101?format=json&order=asc')
 
 # hmm, so. two ways of getting the sample python call:
 # 1. extract from the documentation 2. extract from the call construction example
-# 1. kk
-
-def formatparams(params):
-    formattedparams = []
-    for param in params:
-        if '{' in param:
-            formattedparams.append(param[1:-1])
-        else:
-            formattedparams.append("'%s'" % param)
-    return ", ".join(formattedparams)
 
 #item: list, 1. documentation text 2. API call format 3. Sample API call 4..n. Parameters and parameter descriptions
 
@@ -67,7 +68,6 @@ def createdocstring(docdata):
     docwrapper = textwrap.TextWrapper(initial_indent='    ', subsequent_indent='    ')
     for docurl, doccontents in docdata.iteritems():
         doctext, apicall, samplecall = doccontents[0:3]
-        print 'DOCTEXT', doctext, 'END DOCTEXT'
         doctext = docwrapper.fill(doctext)    
         params = doccontents[3:]
         methodname = create_method_name(docurl)
@@ -76,12 +76,14 @@ def createdocstring(docdata):
                 '\n     ', 'Call construction:', 
                 '\n     ', apicall, 
                 '\n     ', 'Sample call:', 
-                '\n     ', samplecall, 
-                '\n     ', '>>> ', methodname, '('] 
+                '\n     ', samplecall, '\n',
+                '\n     ', '>>> ', methodname, "('", 
+                extractexampleparams(apicall, samplecall), "')", '\n'
+                '\n     ', '@see ', docurl]
         #defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"
-        print ''.join(doclist)
+        return ''.join(doclist)
 
-createdocstring(docdata)
+print createdocstring(docdata)
 
 
 def fixdocstring(func):

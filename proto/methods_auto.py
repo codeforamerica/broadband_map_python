@@ -34,12 +34,17 @@ urlparams = ['broadbandmap', 'almanac', '{dataVersion}', 'rankby', 'state', '{st
 
 
 def formatparams(params): 
+    """
+    Takes list of strings extracted from the api call documentation, figure
+    out which ones are static and which are variables, and format accordingly
+    for generating a python function
+    """
     formattedparams = []
     for param in params:
         if '{' in param:
-            formattedparams.append(param[1:-1])
+            formattedparams.append(param[1:-1]) #variables
         else:
-            formattedparams.append("'%s'" % param)
+            formattedparams.append("'%s'" % param) #static text
     return ", ".join(formattedparams)
 
 def createfxn(fxnname, fxnparams,  apiparams):
