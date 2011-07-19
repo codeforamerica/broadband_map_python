@@ -47,7 +47,7 @@ def extractexampleparams(apicall, samplecall):
             '').split('/')
     staticparams = staticparams[:-1] + staticparams[-1].split('?')
     exampleparams = [v for v in exampleparams if v not in staticparams]
-    print "APICALL", exampleparams, 
+    #print "APICALL", exampleparams, 
     #print '\n', staticparams,'\n'
     return "', '".join(exampleparams[:-1])
 
@@ -73,13 +73,14 @@ def createdocstring(docdata):
         methodname = create_method_name(docurl)
         doclist = ['    """', 
                 '\n', doctext, '\n', 
-                '\n     ', 'Call construction:', 
-                '\n     ', apicall, 
-                '\n     ', 'Sample call:', 
-                '\n     ', samplecall, '\n',
-                '\n     ', '>>> ', methodname, "('", 
+                '\n    ', 'Call construction:', 
+                '\n    ', apicall, 
+                '\n    ', 'Sample call:', 
+                '\n    ', samplecall, '\n',
+                '\n    ', '>>> ', methodname, "('", 
                 extractexampleparams(apicall, samplecall), "')", '\n'
-                '\n     ', '@see ', docurl]
+                '\n    ', '@see ', docurl, '\n',
+                '    """']
         #defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"
         return ''.join(doclist)
 

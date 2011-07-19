@@ -16,9 +16,14 @@ Then I need to output:
 >>> ranking_by_geography_id_within_state('fall2010', '01', 'population',
 ...    'wirelineproviderequals0', 'county', '01101')
 This will be further refined by hand to provide:
->>> api.alamnac.ranking_by_geography_id_within_state('fall2010', '01', 'population',
+>>> api.almanac.ranking_by_geography_id_within_state('fall2010', '01', 'population',
 ...    'wirelineproviderequals0', 'county', '01101', order='asc')
 I can work with this data: APICall 
 http://www.broadbandmap.gov/broadbandmap/almanac/{dataVersion}/rankby/state/{stateId}/{censusMetric}/{rankingMetric}/{geographyType}/id/{geographyId}?properties={properties}&format={format}&callback={functionName}&order={sortOrder}&properties={properties}
 So. Planned steps:
-APICall.replace(http...broadbandmap),  
+APICall.replace(http...broadbandmap), then iteratively replace with '' anything not in {}, so we get final list of test params.
+
+Done for the night. Perhaps autogenerate "order='asc'" params for documentation as well, or perhaps do by hand.
+Still need to do:
+for methods_auto.py, autowrap long argument lines
+
