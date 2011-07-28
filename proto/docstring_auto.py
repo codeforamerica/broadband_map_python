@@ -21,7 +21,9 @@ docdata = {'http://www.broadbandmap.gov/developer/api/geography-lookup-api-by-ge
 expected = """
         This API is designed to find the rankings by geography within the
         state for a specific metric (population or household) and rank (any of
-        the metrics from provider, demographic, technology or speed). The
+t 
+
+       the metrics from provider, demographic, technology or speed). The
         results are the top ten and bottom ten records within the state for the
         particular geography type and my area rankings. Additionally we include
         +/- 5 rankings from the 'my' area rank.
@@ -40,6 +42,12 @@ expected = """
 #print 'EXPECTED', expected       
 
 def extractexampleparams(apicall, samplecall):
+    """
+    This extracts the actual parameters based on the documentation provided by
+    the Broadbandmap API.
+    """
+    #compare "apicall" example to "samplecall" example in the docs to figure out
+    #which ones params are static and which are vars for user input
     samplecall = samplecall.replace('http://www.broadbandmap.gov/broadbandmap/',
             '').split('/')
     exampleparams = samplecall[:-1] + samplecall[-1].split('?')
@@ -53,6 +61,14 @@ def extractexampleparams(apicall, samplecall):
 
 extractexampleparams('http://www.broadbandmap.gov/broadbandmap/almanac/{dataVersion}/rankby/state/{stateId}/{censusMetric}/{rankingMetric}/{geographyType}/id/{geographyId}?properties={properties}&format={format}&callback={functionName}&order={sortOrder}&properties={properties',
 'http://www.broadbandmap.gov/broadbandmap/almanac/fall2010/rankby/state/01/population/wirelineproviderequals0/county/id/01101?format=json&order=asc')
+
+
+def formatparamdocs(paramdoclist):
+    result = []
+    for param in paramdoclist:
+        result.append("@param %s" % param)
+    return "\n    ".join(result)
+
 
 # hmm, so. two ways of getting the sample python call:
 # 1. extract from the documentation 2. extract from the call construction example
@@ -68,17 +84,22 @@ def createdocstring(docdata):
     docwrapper = textwrap.TextWrapper(initial_indent='    ', subsequent_indent='    ')
     for docurl, doccontents in docdata.iteritems():
         doctext, apicall, samplecall = doccontents[0:3]
+        paramdoclist = doccontents[4:]
         doctext = docwrapper.fill(doctext)    
         params = doccontents[3:]
         methodname = create_method_name(docurl)
         doclist = ['    """', 
                 '\n', doctext, '\n', 
+                '\n    ', 'Parameter list:', 
+                '\n    ', '(note that Format param is hardcoded to be json in this wrapper. Specify other optional parameters by passing named arguments to the wrapper fxn, e.g.', 
+                '\n    ', 'someAPICall(callback="Someoption")) ', '\n',
+                '\n    ', formatparamdocs(paramdoclist), '\n',
                 '\n    ', 'Call construction:', 
                 '\n    ', apicall, 
                 '\n    ', 'Sample call:', 
                 '\n    ', samplecall, '\n',
                 '\n    ', '>>> ', methodname, "('", 
-                extractexampleparams(apicall, samplecall), "')", '\n'
+                extractexampleparams(apicall, samplecall), "')", '\n',
                 '\n    ', '@see ', docurl, '\n',
                 '    """']
         #defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"

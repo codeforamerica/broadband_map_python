@@ -53,6 +53,9 @@ class Almanac(BroadbandMap):
         particular geography type and my area rankings. Additionally we include
         +/- 5 rankings from the 'my' area rank.
 
+        @param stateID --
+        @param blah blah -- Insert some documentation here.
+
         Call construction:
         http://www.broadbandmap.gov/broadbandmap/almanac/{dataVersion}/rankby/state/{stateId}/{censusMetric}/{rankingMetric}/{geographyType}/id/{geographyId}?properties={properties}&format={format}&callback={functionName}&order={sortOrder}&properties={properties}
         Sample call:
