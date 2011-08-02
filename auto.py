@@ -14,20 +14,26 @@ class Autowrap(object):
 
     def main(self):
         output = []
-        #for docurl, doccontents in self.docdata.iteritems():
-        for docurl, doccontents in data.exampledocdata_dict.iteritems():
+        for docurl, doccontents in self.docdata.iteritems():
+        #for docurl, doccontents in data.exampledocdata_dict.iteritems():
             doctext, apicall, samplecall = doccontents[0:3]
             print docurl
             paramdoclist = doccontents[4:]
             paramsdocs = doccontents[3:]
             staticparams, formatted_userparams = self._extractexampleparams(apicall, samplecall)
             methodname = self._createmethodname(docurl)
-            defstr, callstr = self._createfxn(methodname, formatted_userparams, self._formatparams(staticparams[:-1]))
+            staticparams, formatted_exampleuserparams = self._extractexampleparams(apicall, samplecall)
+            defparams, callparams = self._formatparams(staticparams)
+            defstr, callstr = self._createfxn(methodname,
+                    defparams,
+                    callparams)
             output.append(defstr)
             output.append(self._createdocstring(doctext, apicall, samplecall,
                 paramdoclist, paramsdocs, methodname, docurl))
             output.append(callstr)
-        return ''.join(output)
+        with open('methodtext.py', 'w') as f:
+            f.write(''.join(output))
+        #return ''.join(output)
 
     def _formatparams(self, params):
         """
@@ -35,23 +41,27 @@ class Autowrap(object):
         out which ones are static and which are variables, and format accordingly
         for generating a python function.
         """
-        formattedparams = []
+        defparams = []
+        callparams = []
         for param in params:
         # The broadband map delineates user-inputted vars with { } brackets
         # http://www.broadbandmap.gov/broadbandmap/almanac/{dataVersion}/rankby/state/{stateId}/{censusMetric}/{rankingMetric}/{geographyType}/id/{geographyId}?properties={properties}&format={format}&callback={functionName}&order={sortOrder}&properties={properties}
             if '{' in param: #non-static 
-                formattedparams.append(param[1:-1]) #variables
+                callparams.append(param[1:-1]) #variables
+                defparams.append(param[1:-1])
             else:
-                formattedparams.append("'%s'" % param) #static text
-        return ", ".join(formattedparams)
+                callparams.append("'%s'" % param) #static text
+        callparams = ", ".join(callparams[:-1])
+        defparams = ", ".join(defparams[:-1])
+        return (defparams, callparams)
 
     def _createfxn(self, fxnname, fxnparams,  apiparams):
         """
         Creates an api wrapper fxn given the name, user-input params, and required
         static text.
         """
-        defstr = "    def " + fxnname + "(self, " + fxnparams + ", **optargs):"
-        callstr = "        self.call_api(" + apiparams + ", **optargs)" 
+        defstr = "\n    def " + fxnname + "(self, " + fxnparams + ", **optargs):"
+        callstr = "        self.call_api(" + apiparams + ", **optargs) \n" 
         #return defstr + "\n" + callstr
         return (defstr, callstr)
 
@@ -67,9 +77,9 @@ class Autowrap(object):
         staticparams = apicall.replace('http://www.broadbandmap.gov/broadbandmap/',
                 '').split('/')
         staticparams = staticparams[:-1] + staticparams[-1].split('?')
-        userparams = [x for x in sampleparams if x not in staticparams]
+        exampleuserparams = [x for x in sampleparams if x not in staticparams]
         #return "', '".join(userparams[:-1])
-        return (staticparams, "', '".join(userparams[:-1]))
+        return (staticparams, "', '".join(exampleuserparams[:-1]))
         # sampleparams: [u'geography', u'congdistrict', u'id', u'0111101', u'format=json'] 
         # staticparams: [u'geography', u'{geographyType}', u'id', u'{geographyId}', u'format={format}&callback={functionName}']
         # userparams: [u'congdistrict', u'0111101', u'format=json']
@@ -89,13 +99,12 @@ class Autowrap(object):
             paramsdocs, methodname, docurl):
         docwrapper = textwrap.TextWrapper(initial_indent='        ', subsequent_indent='        ')
         doctext = docwrapper.fill(doctext)    
-        staticparams, formatted_userparams = self._extractexampleparams(apicall, samplecall), "')", 
+        staticparams, formatted_exampleuserparams = self._extractexampleparams(apicall, samplecall)
         doclist = ['\n', '        """', 
                 '\n', doctext, 
                 '\n', 
                 '\n        ', 'Parameter list:', 
-                '\n        ', '**Note that Format param is hardcoded to be json in this wrapper. Specify other optional parameters by passing named arguments to the wrapper fxn, e.g.', 
-                '\n        ', 'someAPICall(callback="Someoption") **', 
+                '\n', docwrapper.fill('**Note that the API\'s format param is hardcoded to be json in this wrapper. Specify other optional parameters by passing named arguments to the wrapper fxn, e.g. someAPICall(callback="Someoption") **'), 
                 '\n',
                 '\n        ', self._formatparamdocs(paramdoclist), 
                 '\n',
@@ -104,7 +113,7 @@ class Autowrap(object):
                 '\n        ', 'Sample call:', 
                 '\n        ', samplecall, 
                 '\n',
-                '\n        ', '>>> ', methodname, "('", formatted_userparams, "')", 
+                '\n        ', '>>> ', methodname, "('", formatted_exampleuserparams, "')", 
                 '\n',
                 '\n        ', '@see ', docurl, 
                 '\n',
@@ -115,7 +124,7 @@ class Autowrap(object):
     #print _createdocstring(data.docdata)
 
 test = Autowrap()
-apicall, samplecall = data.exampledocdata[1:3]
-staticparams, userparams = test._extractexampleparams(apicall, samplecall)
-print staticparams, userparams
+#apicall, samplecall = data.exampledocdata[1:3]
+#staticparams, userparams = test._extractexampleparams(apicall, samplecall)
+#print staticparams, userparams
 print test.main()
