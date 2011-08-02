@@ -13,13 +13,22 @@ class Autowrap(object):
         #self.doclinks = data.doclinks #In format: [docURL1, docURL2]  (list of links to documentation for each API method) 
 
     def main(self):
-        for docurl, doccontents in self.docdata.iteritems():
+        output = []
+        #for docurl, doccontents in self.docdata.iteritems():
+        for docurl, doccontents in data.exampledocdata_dict.iteritems():
             doctext, apicall, samplecall = doccontents[0:3]
+            print docurl
             paramdoclist = doccontents[4:]
-            params = doccontents[3:]
+            paramsdocs = doccontents[3:]
+            staticparams, formatted_userparams = self._extractexampleparams(apicall, samplecall)
+            methodname = self._createmethodname(docurl)
+            output.append(self._createfxn(methodname, 
+                formatted_userparams, self._formatparams(staticparams[:-1])))
+            output.append(self._createdocstring(doctext, apicall, samplecall,
+                paramdoclist, paramsdocs, methodname, docurl))
+        return ''.join(output)
 
-
-   def _formatparams(self, params):
+    def _formatparams(self, params):
         """
         Takes list of strings extracted from the api call documentation, figure
         out which ones are static and which are variables, and format accordingly
@@ -40,10 +49,10 @@ class Autowrap(object):
         Creates an api wrapper fxn given the name, user-input params, and required
         static text.
         """
-        defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"
-        callstr = "       self.call_api(" + self._formatparams(apiparams) + ", **optargs)" 
-        #return defstr + "\n" + callstr
-        return (defstr, callstr)
+        defstr = "    def " + fxnname + "(self, " + fxnparams + ", **optargs):"
+        callstr = "       self.call_api(" + apiparams + ", **optargs)" 
+        return defstr + "\n" + callstr
+        #return (defstr, callstr)
 
     def _extractexampleparams(self, apicall, samplecall): #API-specific
         """
@@ -51,16 +60,18 @@ class Autowrap(object):
         params, for this API method based on the documentation provided by
         the Broadbandmap API.
         """
-        #compare "apicall" example to "samplecall" example in the docs to figure out
-        #which ones params are static and which are vars for user input
         samplecall = samplecall.replace('http://www.broadbandmap.gov/broadbandmap/',
                 '').split('/')
-        allparams = samplecall[:-1] + samplecall[-1].split('?')
+        sampleparams = samplecall[:-1] + samplecall[-1].split('?')
         staticparams = apicall.replace('http://www.broadbandmap.gov/broadbandmap/',
                 '').split('/')
         staticparams = staticparams[:-1] + staticparams[-1].split('?')
-        userparams = [x for x in allparams if x not in staticparams]
-        return (
+        userparams = [x for x in sampleparams if x not in staticparams]
+        #return "', '".join(userparams[:-1])
+        return (staticparams, "', '".join(userparams[:-1]))
+        # sampleparams: [u'geography', u'congdistrict', u'id', u'0111101', u'format=json'] 
+        # staticparams: [u'geography', u'{geographyType}', u'id', u'{geographyId}', u'format={format}&callback={functionName}']
+        # userparams: [u'congdistrict', u'0111101', u'format=json']
 
     def _formatparamdocs(self, paramdoclist):
         result = []
@@ -73,31 +84,37 @@ class Autowrap(object):
         api_url = api_url.replace('-', '_')
         return api_url
 
-    def _createdocstrings(self, docdata):
+    def _createdocstring(self, doctext, apicall, samplecall, paramdoclist,
+            paramsdocs, methodname, docurl):
         docwrapper = textwrap.TextWrapper(initial_indent='    ', subsequent_indent='    ')
-            doctext = docwrapper.fill(doctext)    
-            methodname = self._createmethodname(docurl)
-            doclist = ['    """', 
-                    '\n', doctext, 
-                    '\n', 
-                    '\n    ', 'Parameter list:', 
-                    '\n    ', '(note that Format param is hardcoded to be json in this wrapper. Specify other optional parameters by passing named arguments to the wrapper fxn, e.g.', 
-                    '\n    ', 'someAPICall(callback="Someoption")) ', 
-                    '\n',
-                    '\n    ', self._formatparamdocs(paramdoclist), 
-                    '\n',
-                    '\n    ', 'Call construction:', 
-                    '\n    ', apicall, 
-                    '\n    ', 'Sample call:', 
-                    '\n    ', samplecall, 
-                    '\n',
-                    '\n    ', '>>> ', methodname, "('", 
-                    self._extractexampleparams(apicall, samplecall), "')", 
-                    '\n',
-                    '\n    ', '@see ', docurl, 
-                    '\n',
-                    '    """']
-            #defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"
-            return ''.join(doclist)
+        doctext = docwrapper.fill(doctext)    
+        staticparams, formatted_userparams = self._extractexampleparams(apicall, samplecall), "')", 
+        doclist = ['    """', 
+                '\n', doctext, 
+                '\n', 
+                '\n    ', 'Parameter list:', 
+                '\n    ', '(note that Format param is hardcoded to be json in this wrapper. Specify other optional parameters by passing named arguments to the wrapper fxn, e.g.', 
+                '\n    ', 'someAPICall(callback="Someoption")) ', 
+                '\n',
+                '\n    ', self._formatparamdocs(paramdoclist), 
+                '\n',
+                '\n    ', 'Call construction:', 
+                '\n    ', apicall, 
+                '\n    ', 'Sample call:', 
+                '\n    ', samplecall, 
+                '\n',
+                '\n    ', '>>> ', methodname, "('", formatted_userparams, "')", 
+                '\n',
+                '\n    ', '@see ', docurl, 
+                '\n',
+                '    """']
+        #defstr = "    def " + fxnname + "(self, " + ", ".join(fxnparams) + ", **optargs):"
+        return ''.join(doclist)
 
     #print _createdocstring(data.docdata)
+
+test = Autowrap()
+apicall, samplecall = data.exampledocdata[1:3]
+staticparams, userparams = test._extractexampleparams(apicall, samplecall)
+print staticparams, userparams
+print test.main()
