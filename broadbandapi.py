@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+
+"""
+The National Broadband Map is a tool to search, analyze and map broadband availability across the United States.
+Created and maintained by the NTIA, in collaboration with the FCC, and in partnership with 50 states, five territories and the District of Columbia. 
+"""
+
+from api import API
+
+
+class BroadbandAPI(API):
+"""
+Python wrapper for the US National BroadbandMap API.
+See www.broadbandmap.gov/developer for more information. 
+"""
+    def __init__(self):
+        pass
 
     def geography_lookup_api_by_geography_id(self, geographyType, geographyId, **optargs):
         """

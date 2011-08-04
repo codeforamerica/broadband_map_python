@@ -1,4 +1,0 @@
-todo: 
-insert parameters into docstrings (high)
-fix the indentation of long function example (low priority) -- meh skip (
-needed in both autodoc and automethod)
